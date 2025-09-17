@@ -1,0 +1,34 @@
+{
+  "folder-color.pathColors": [
+    {
+      "folderPath": "ControlAsistencia\\app\\src\\main\\java\\com\\example\\controlasistencia\\controller\\",
+      "color": "foldercolorizer.color_00cc33"
+    },
+    {
+      "folderPath": "ControlAsistencia\\app\\src\\main\\java\\com\\example\\controlasistencia\\controller\\CGrupoControllerSimple.kt\\",
+      "badge": "😀"
+    },
+    {
+      "folderPath": "ControlAsistencia\\app\\src\\main\\java\\com\\example\\controlasistencia\\controller\\CMateriaControllerSimple.kt\\",
+      "badge": "😀"
+    },
+    {
+      "folderPath": "ControlAsistencia\\app\\src\\main\\java\\com\\example\\controlasistencia\\view\\VGrupoViewSimple.kt\\",
+      "color": "foldercolorizer.color_00cc00",
+      "badge": "😲"
+    },
+    {
+      "folderPath": "ControlAsistencia\\app\\src\\main\\java\\com\\example\\controlasistencia\\view\\VMateriaViewSimple.kt\\",
+      "color": "foldercolorizer.color_00cc00",
+      "badge": "😲"
+    },
+    {
+      "folderPath": "ControlAsistencia\\app\\src\\main\\java\\com\\example\\controlasistencia\\model\\MGrupo.kt\\",
+      "badge": "😠"
+    },
+    {
+      "folderPath": "ControlAsistencia\\app\\src\\main\\java\\com\\example\\controlasistencia\\model\\MMateria.kt\\",
+      "badge": "😠"
+    }
+  ]
+}
