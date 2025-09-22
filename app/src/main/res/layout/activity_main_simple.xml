@@ -40,4 +40,23 @@
         android:padding="16dp"
         android:layout_marginTop="16dp" />
 
+    <Button
+        android:id="@+id/btnClases"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Gestionar Clases"
+        android:textSize="18sp"
+        android:padding="16dp"
+        android:layout_marginTop="16dp" />
+
+    <Button
+        android:id="@+id/btnAsistencia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Marcar Asistencia"
+        android:textSize="18sp"
+        android:padding="16dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@android:color/holo_green_dark" />
+
 </LinearLayout>

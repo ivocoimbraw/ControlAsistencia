@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:padding="16dp">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
     <TextView
         android:layout_width="wrap_content"
@@ -13,40 +17,66 @@
         android:textStyle="bold"
         android:layout_marginBottom="16dp" />
 
-    <EditText
-        android:id="@+id/txtFechaClase"
-        android:layout_width="match_parent"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Fecha (YYYY-MM-DD)"
+        android:text="Fecha:"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp" />
+
+    <DatePicker
+        android:id="@+id/datePicker"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:datePickerMode="spinner"
+        android:calendarViewShown="false"
         android:layout_marginBottom="8dp" />
 
-    <EditText
-        android:id="@+id/txtHoraInicioClase"
-        android:layout_width="match_parent"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Hora inicio (HH:MM)"
+        android:text="Hora de inicio:"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp" />
+
+    <TimePicker
+        android:id="@+id/timePickerInicio"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:timePickerMode="spinner"
         android:layout_marginBottom="8dp" />
 
-    <EditText
-        android:id="@+id/txtHoraFinClase"
-        android:layout_width="match_parent"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Hora fin (HH:MM)"
+        android:text="Hora de fin:"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp" />
+
+    <TimePicker
+        android:id="@+id/timePickerFin"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:timePickerMode="spinner"
         android:layout_marginBottom="8dp" />
 
-    <EditText
-        android:id="@+id/txtEstadoClase"
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Estado:"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp" />
+
+    <Spinner
+        android:id="@+id/slcEstado"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Estado"
         android:layout_marginBottom="8dp" />
 
-    <EditText
-        android:id="@+id/txtIdGrupoClase"
+    <Spinner
+        android:id="@+id/slcGrupo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="ID del grupo"
-        android:inputType="number"
         android:layout_marginBottom="8dp" />
 
     <LinearLayout
@@ -92,6 +122,34 @@
     <ListView
         android:id="@+id/lvClases"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="150dp"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Código QR de la Clase"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <ImageView
+        android:id="@+id/imgQrCode"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@android:color/white"
+        android:contentDescription="Código QR de la clase"
+        android:scaleType="centerInside"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/btnDescargarQr"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Descargar QR"
+        android:enabled="false" />
 
 </LinearLayout>
+
+</ScrollView>

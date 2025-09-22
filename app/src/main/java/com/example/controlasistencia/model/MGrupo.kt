@@ -88,6 +88,26 @@ data class MGrupo(var id: Int = 0, var nombre: String = "", var id_materia: Int 
             db.close()
             return nombreMateria
         }
+
+        // obtenerGrupo(): String - Obtiene el nombre del grupo
+        fun obtenerGrupo(context: Context, idGrupo: Int): String {
+            val dbh = DBHelper(context)
+            val db = dbh.readableDatabase
+            val cursor = db.query(
+                DBHelper.TABLE_GRUPO,
+                arrayOf("nombre"),
+                "id = ?",
+                arrayOf(idGrupo.toString()),
+                null, null, null
+            )
+            var nombreGrupo = "Grupo no encontrado"
+            if (cursor.moveToFirst()) {
+                nombreGrupo = cursor.getString(cursor.getColumnIndexOrThrow("nombre"))
+            }
+            cursor.close()
+            db.close()
+            return nombreGrupo
+        }
     }
 
     // actualizar(): boolean

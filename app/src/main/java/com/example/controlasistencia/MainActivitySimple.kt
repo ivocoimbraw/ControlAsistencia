@@ -15,6 +15,8 @@ class MainActivitySimple : Activity() {
         val btnMaterias: Button = findViewById(R.id.btnMaterias)
         val btnGrupos: Button = findViewById(R.id.btnGrupos)
         val btnAlumnos: Button = findViewById(R.id.btnAlumnos)
+        val btnClases: Button = findViewById(R.id.btnClases)
+        val btnAsistencia: Button = findViewById(R.id.btnAsistencia)
         
         btnMaterias.setOnClickListener {
             startActivity(Intent(this, MateriaActivity::class.java))
@@ -26,6 +28,14 @@ class MainActivitySimple : Activity() {
 
         btnAlumnos.setOnClickListener {
             startActivity(Intent(this, AlumnoActivity::class.java))
+        }
+
+        btnClases.setOnClickListener {
+            startActivity(Intent(this, ClaseActivity::class.java))
+        }
+
+        btnAsistencia.setOnClickListener {
+            startActivity(Intent(this, AsistenciaActivity::class.java))
         }
     }
 }

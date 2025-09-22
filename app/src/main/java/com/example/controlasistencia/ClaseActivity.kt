@@ -2,7 +2,7 @@ package com.example.controlasistencia
 
 import android.app.Activity
 import android.os.Bundle
-import com.example.controlasistencia.view.VClaseViewSimple
+import com.example.controlasistencia.view.VClase
 
 class ClaseActivity : Activity() {
 
@@ -10,6 +10,6 @@ class ClaseActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_clase)
 
-        VClaseViewSimple(this)
+        VClase(this)
     }
 }

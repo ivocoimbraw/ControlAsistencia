@@ -8,7 +8,7 @@ import com.example.controlasistencia.model.MGrupo
 import com.example.controlasistencia.model.MMateria
 
 class VGrupo(private val activity: Activity) {
-    
+
     private val controller = CGrupo(activity, this)
     private val txtNombre: EditText = activity.findViewById(R.id.txtNombreGrupo)
     private val slcMateria: Spinner = activity.findViewById(R.id.slcMateria)
@@ -93,4 +93,5 @@ class VGrupo(private val activity: Activity) {
         grupoEditando = null
         btnEliminar.isEnabled = false
     }
+
 }

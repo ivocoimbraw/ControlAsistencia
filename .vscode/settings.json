@@ -1,10 +1,6 @@
 {
   "folder-color.pathColors": [
     {
-      "folderPath": "ControlAsistencia\\app\\src\\main\\java\\com\\example\\controlasistencia\\controller\\",
-      "color": "foldercolorizer.color_00cc33"
-    },
-    {
       "folderPath": "ControlAsistencia\\app\\src\\main\\java\\com\\example\\controlasistencia\\controller\\CGrupoControllerSimple.kt\\",
       "badge": "😀"
     },
@@ -23,12 +19,22 @@
       "badge": "😲"
     },
     {
-      "folderPath": "ControlAsistencia\\app\\src\\main\\java\\com\\example\\controlasistencia\\model\\MGrupo.kt\\",
-      "badge": "😠"
+      "folderPath": "ControlAsistencia\\app\\src\\main\\java\\com\\example\\controlasistencia\\controller\\CAsistencia.kt\\"
     },
     {
-      "folderPath": "ControlAsistencia\\app\\src\\main\\java\\com\\example\\controlasistencia\\model\\MMateria.kt\\",
-      "badge": "😠"
+      "folderPath": "ControlAsistencia\\app\\src\\main\\java\\com\\example\\controlasistencia\\controller\\CClase.kt\\"
+    },
+    {
+      "folderPath": "ControlAsistencia\\app\\src\\main\\java\\com\\example\\controlasistencia\\controller\\CQrCode.kt\\"
+    },
+    {
+      "folderPath": "ControlAsistencia\\app\\src\\main\\java\\com\\example\\controlasistencia\\model\\MAsistencia.kt\\"
+    },
+    {
+      "folderPath": "ControlAsistencia\\app\\src\\main\\java\\com\\example\\controlasistencia\\model\\MQrCode.kt\\"
+    },
+    {
+      "folderPath": "ControlAsistencia\\app\\src\\main\\java\\com\\example\\controlasistencia\\view\\VAsistencia.kt\\"
     }
   ]
 }
