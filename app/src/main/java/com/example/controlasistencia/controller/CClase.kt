@@ -85,4 +85,107 @@ class CClase(
         cargarClases()
         cargarGrupos()
     }
+    
+    // Métodos para instanciar modelos
+    fun crearInstanciaClase(fecha: String = "", horaInicio: String = "", horaFin: String = "", estado: String = "programada", idGrupo: Int = 0, idQrCode: Int = 0): MClase {
+        return MClase(fecha = fecha, horaInicio = horaInicio, horaFin = horaFin, estado = estado, idGrupo = idGrupo, idQrCode = idQrCode)
+    }
+    
+    fun crearInstanciaClaseVacia(): MClase {
+        return MClase()
+    }
+    
+    fun crearInstanciaQrCode(contenido: String = "", fechaGeneracion: String = "", idClase: Int = 0): MQrCode {
+        return MQrCode()
+    }
+    
+    // Método para inicializar la vista y configurar listeners
+    fun inicializar() {
+        view.inicializarComponentes()
+        configurarListeners()
+        actualizarVista()
+    }
+    
+    private fun configurarListeners() {
+        // Configurar listeners de botones
+        view.setOnGuardarClick { guardarClase() }
+        view.setOnAgregarClick { mostrarCrear() }
+        view.setOnEliminarClick { eliminarClaseActual() }
+        view.setOnDescargarQrClick { descargarQr() }
+        
+        // Configurar listener del ListView
+        view.setOnClaseSeleccionada { position ->
+            manejarSeleccionClase(position)
+        }
+    }
+    
+    private fun guardarClase() {
+        val datosFormulario = view.obtenerDatosFormulario()
+        val grupos = view.obtenerGrupos()
+        
+        if (grupos.isNotEmpty() && datosFormulario.grupoSeleccionado >= 0 && datosFormulario.grupoSeleccionado < grupos.size) {
+            val grupoSeleccionado = grupos[datosFormulario.grupoSeleccionado]
+            val claseEditando = view.obtenerClaseEditando()
+
+            if (claseEditando != null) {
+                actualizarClase(
+                    claseEditando, 
+                    datosFormulario.fecha, 
+                    datosFormulario.horaInicio, 
+                    datosFormulario.horaFin, 
+                    datosFormulario.estado, 
+                    grupoSeleccionado.id
+                )
+            } else {
+                crearClase(
+                    datosFormulario.fecha, 
+                    datosFormulario.horaInicio, 
+                    datosFormulario.horaFin, 
+                    datosFormulario.estado, 
+                    grupoSeleccionado.id
+                )
+            }
+            view.limpiarFormulario()
+        }
+    }
+    
+    private fun eliminarClaseActual() {
+        val claseEditando = view.obtenerClaseEditando()
+        claseEditando?.let {
+            eliminarClase(it)
+            view.limpiarFormulario()
+        }
+    }
+    
+    private fun descargarQr() {
+        val claseEditando = view.obtenerClaseEditando()
+        if (claseEditando?.idQrCode != null) {
+            val qr = obtenerQrCode(claseEditando.idQrCode!!)
+            if (qr != null) {
+                view.descargarQrArchivo(qr.qrCode, claseEditando.id)
+            }
+        }
+    }
+    
+    private fun manejarSeleccionClase(position: Int) {
+        val clases = MClase.listar(context)
+        if (position >= 0 && position < clases.size) {
+            val claseSeleccionada = clases[position]
+            mostrarEditar(claseSeleccionada)
+            mostrarQrDeClase(claseSeleccionada)
+        }
+    }
+    
+    private fun mostrarQrDeClase(clase: MClase) {
+        if (clase.idQrCode != null) {
+            val qr = obtenerQrCode(clase.idQrCode!!)
+            if (qr != null) {
+                view.mostrarQr(qr.qrCode, true)
+            } else {
+                view.mostrarQr("", false)
+            }
+        } else {
+            view.mostrarQr("", false)
+        }
+    }
 }

@@ -9,6 +9,14 @@ class CAlumno(
     private val view: VAlumno
 ) {
 
+    fun inicializar() {
+        view.setOnGuardarClick { guardarAlumno() }
+        view.setOnAgregarClick { mostrarCrear() }
+        view.setOnEliminarClick { eliminarAlumno() }
+        view.setOnAlumnoSeleccionado { alumno -> mostrarEditar(alumno) }
+        actualizarVista()
+    }
+
     fun cargarAlumnos() {
         val alumnos = MAlumno.listar(context)
         view.mostrarAlumnos(alumnos)
@@ -48,5 +56,36 @@ class CAlumno(
 
     fun actualizarVista() {
         cargarAlumnos()
+    }
+    
+    // Métodos para instanciar modelos
+    fun crearInstanciaAlumno(registro: String = "", apellidop: String = "", apellidom: String = "", nombre: String = ""): MAlumno {
+        return MAlumno(registro, apellidop, apellidom, nombre)
+    }
+    
+    fun crearInstanciaAlumnoVacia(): MAlumno {
+        return MAlumno("", "", "", "")
+    }
+    
+    private fun guardarAlumno() {
+        val registro = view.getRegistro()
+        val apellidop = view.getApellidoP()
+        val apellidom = view.getApellidoM()
+        val nombre = view.getNombre()
+        val alumnoEditando = view.getAlumnoEditando()
+        
+        if (alumnoEditando != null) {
+            actualizarAlumno(alumnoEditando, registro, apellidop, apellidom, nombre)
+        } else {
+            crearAlumno(registro, apellidop, apellidom, nombre)
+        }
+        view.limpiarFormulario()
+    }
+    
+    private fun eliminarAlumno() {
+        view.getAlumnoEditando()?.let {
+            eliminarAlumno(it)
+            view.limpiarFormulario()
+        }
     }
 }

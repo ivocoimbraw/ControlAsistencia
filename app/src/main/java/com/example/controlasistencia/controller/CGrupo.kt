@@ -10,6 +10,15 @@ class CGrupo(
     private val view: VGrupo
 ) {
     
+    fun inicializar() {
+        view.setOnGuardarClick { guardarGrupo() }
+        view.setOnAgregarClick { mostrarCrear() }
+        view.setOnEliminarClick { eliminarGrupo() }
+        view.setOnGrupoSeleccionado { grupo -> mostrarEditar(grupo) }
+        view.setObtenerMateria { idMateria -> obtenerMateria(idMateria) }
+        actualizarVista()
+    }
+    
     fun cargarGrupos() {
         val grupos = MGrupo.listar(context)
         view.mostrarGrupos(grupos)
@@ -59,5 +68,34 @@ class CGrupo(
     fun actualizarVista() {
         cargarGrupos()
         cargarMaterias()
+    }
+    
+    // Métodos para instanciar modelos
+    fun crearInstanciaGrupo(nombre: String = "", idMateria: Int = 0): MGrupo {
+        return MGrupo(nombre = nombre, id_materia = idMateria)
+    }
+    
+    fun crearInstanciaGrupoVacia(): MGrupo {
+        return MGrupo(0, "")
+    }
+    
+    private fun guardarGrupo() {
+        val nombre = view.getNombre()
+        val materiaSeleccionada = view.getMateriaSeleccionada()
+        val grupoEditando = view.getGrupoEditando()
+        
+        if (grupoEditando != null) {
+            actualizarGrupo(grupoEditando, nombre, materiaSeleccionada.id)
+        } else {
+            crearGrupo(nombre, materiaSeleccionada.id)
+        }
+        view.limpiarFormulario()
+    }
+    
+    private fun eliminarGrupo() {
+        view.getGrupoEditando()?.let {
+            eliminarGrupo(it)
+            view.limpiarFormulario()
+        }
     }
 }

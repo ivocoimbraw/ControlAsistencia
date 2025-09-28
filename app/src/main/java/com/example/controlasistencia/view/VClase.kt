@@ -5,8 +5,6 @@ import android.graphics.Bitmap
 import android.os.Environment
 import android.widget.*
 import com.example.controlasistencia.R
-import com.example.controlasistencia.controller.CClase
-import com.example.controlasistencia.controller.CQrCode
 import com.example.controlasistencia.model.MClase
 import com.example.controlasistencia.model.MGrupo
 import com.journeyapps.barcodescanner.BarcodeEncoder
@@ -17,9 +15,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class VClase(private val activity: Activity) {
-
-    private val controller = CClase(activity, this)
-    private val qrController = CQrCode(activity)
     private val datePicker: DatePicker = activity.findViewById(R.id.datePicker)
     private val timePickerInicio: TimePicker = activity.findViewById(R.id.timePickerInicio)
     private val timePickerFin: TimePicker = activity.findViewById(R.id.timePickerFin)
@@ -36,45 +31,63 @@ class VClase(private val activity: Activity) {
     private var adapter: ArrayAdapter<String>? = null
     private var grupos: List<MGrupo> = emptyList()
     private val estadosClase = arrayOf("PROGRAMADA", "CANCELADA")
+    
+    // Callbacks para el controlador
+    private var onGuardarClick: (() -> Unit)? = null
+    private var onAgregarClick: (() -> Unit)? = null
+    private var onEliminarClick: (() -> Unit)? = null
+    private var onDescargarQrClick: (() -> Unit)? = null
+    private var onClaseSeleccionada: ((Int) -> Unit)? = null
 
-    init {
+    fun inicializarComponentes() {
         setupEstados()
-        controller.actualizarVista()
-        setupListeners()
+        
+        // Inicialmente botón eliminar y descarga QR deshabilitados
+        btnEliminar.isEnabled = false
+        btnDescargarQr.isEnabled = false
+        imgQrCode.setImageResource(android.R.color.transparent)
     }
-
+    
     private fun setupEstados() {
         val estadoAdapter = ArrayAdapter(activity, android.R.layout.simple_spinner_item, estadosClase)
         estadoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         slcEstado.adapter = estadoAdapter
         slcEstado.setSelection(0) // "PROGRAMADA" por defecto
     }
-
-    private fun setupListeners() {
-        btnGuardar.setOnClickListener { guardarClase() }
-        btnAgregar.setOnClickListener { controller.mostrarCrear() }
-        btnEliminar.setOnClickListener { eliminarClase() }
-        btnDescargarQr.setOnClickListener { descargarQr() }
-
+    
+    // Métodos para configurar callbacks desde el controlador
+    fun setOnGuardarClick(callback: () -> Unit) {
+        this.onGuardarClick = callback
+        btnGuardar.setOnClickListener { callback() }
+    }
+    
+    fun setOnAgregarClick(callback: () -> Unit) {
+        this.onAgregarClick = callback
+        btnAgregar.setOnClickListener { callback() }
+    }
+    
+    fun setOnEliminarClick(callback: () -> Unit) {
+        this.onEliminarClick = callback
+        btnEliminar.setOnClickListener { callback() }
+    }
+    
+    fun setOnDescargarQrClick(callback: () -> Unit) {
+        this.onDescargarQrClick = callback
+        btnDescargarQr.setOnClickListener { callback() }
+    }
+    
+    fun setOnClaseSeleccionada(callback: (Int) -> Unit) {
+        this.onClaseSeleccionada = callback
         lvClases.setOnItemClickListener { _, _, position, _ ->
-            val claseTexto = adapter?.getItem(position) ?: ""
-            val id = claseTexto.split(" - ")[0].toInt()
-            val clase = controller.obtenerClase(id)
-            clase?.let { 
-                controller.mostrarEditar(it)
-                mostrarQr(it)
-            }
+            callback(position)
         }
     }
 
-    fun mostrarClases(clases: List<MClase>) {
+    fun mostrarClases(clases: List<MClase>, gruposDisponibles: List<MGrupo> = emptyList()) {
+        val gruposParaBuscar = if (gruposDisponibles.isNotEmpty()) gruposDisponibles else grupos
         val items = clases.map { 
-            val grupo = grupos.find { grupo -> grupo.id == it.idGrupo }
-            val materiaGrupo = if (grupo != null) {
-                "${controller.obtenerMateria(grupo.id_materia)} - ${grupo.nombre}"
-            } else {
-                controller.obtenerGrupo(it.idGrupo)
-            }
+            val grupo = gruposParaBuscar.find { grupo -> grupo.id == it.idGrupo }
+            val materiaGrupo = grupo?.let { "${it.id_materia} - ${it.nombre}" } ?: "Grupo ${it.idGrupo}"
             "${it.id} - ${it.fecha} ${it.horaInicio}-${it.horaFin} (${materiaGrupo}) [${it.estado}]"
         }
         adapter = ArrayAdapter(activity, android.R.layout.simple_list_item_1, items)
@@ -83,7 +96,7 @@ class VClase(private val activity: Activity) {
 
     fun mostrarGrupos(grupos: List<MGrupo>) {
         this.grupos = grupos
-        val items = grupos.map { "${controller.obtenerMateria(it.id_materia)} - ${it.nombre}" }
+        val items = grupos.map { "${it.id_materia} - ${it.nombre}" }
         val spinnerAdapter = ArrayAdapter(activity, android.R.layout.simple_spinner_item, items)
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         slcGrupo.adapter = spinnerAdapter
@@ -152,41 +165,37 @@ class VClase(private val activity: Activity) {
         if (grupoIndex >= 0) slcGrupo.setSelection(grupoIndex)
         claseEditando = clase
         btnEliminar.isEnabled = true
-        mostrarQr(clase)
     }
 
-    private fun guardarClase() {
-        // Obtener fecha del DatePicker
+    // Clase para encapsular los datos del formulario
+    data class DatosFormulario(
+        val fecha: String,
+        val horaInicio: String,
+        val horaFin: String,
+        val estado: String,
+        val grupoSeleccionado: Int
+    )
+    
+    // Métodos para obtener información del estado actual
+    fun obtenerDatosFormulario(): DatosFormulario {
         val fecha = String.format("%04d-%02d-%02d", datePicker.year, datePicker.month + 1, datePicker.dayOfMonth)
-        
-        // Obtener hora inicio del TimePicker
         val horaInicio = String.format("%02d:%02d", timePickerInicio.hour, timePickerInicio.minute)
-        
-        // Obtener hora fin del TimePicker
         val horaFin = String.format("%02d:%02d", timePickerFin.hour, timePickerFin.minute)
-        
         val estado = estadosClase[slcEstado.selectedItemPosition]
+        val grupoSeleccionado = slcGrupo.selectedItemPosition
         
-        if (grupos.isNotEmpty()) {
-            val grupoSeleccionado = grupos[slcGrupo.selectedItemPosition]
-
-            if (claseEditando != null) {
-                controller.actualizarClase(claseEditando!!, fecha, horaInicio, horaFin, estado, grupoSeleccionado.id)
-            } else {
-                controller.crearClase(fecha, horaInicio, horaFin, estado, grupoSeleccionado.id)
-            }
-            limpiarFormulario()
-        }
+        return DatosFormulario(fecha, horaInicio, horaFin, estado, grupoSeleccionado)
+    }
+    
+    fun obtenerClaseEditando(): MClase? {
+        return claseEditando
+    }
+    
+    fun obtenerGrupos(): List<MGrupo> {
+        return grupos
     }
 
-    private fun eliminarClase() {
-        claseEditando?.let {
-            controller.eliminarClase(it)
-            limpiarFormulario()
-        }
-    }
-
-    private fun limpiarFormulario() {
+    fun limpiarFormulario() {
         // Restablecer a fecha y hora actual
         val calendar = Calendar.getInstance()
         datePicker.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
@@ -205,20 +214,17 @@ class VClase(private val activity: Activity) {
         btnDescargarQr.isEnabled = false
     }
     
-    private fun mostrarQr(clase: MClase) {
-        if (clase.idQrCode != null) {
-            val qr = qrController.obtenerQrPorId(clase.idQrCode!!)
-            if (qr != null) {
-                try {
-                    val barcodeEncoder = BarcodeEncoder()
-                    val bitmap = barcodeEncoder.encodeBitmap(qr.qrCode, BarcodeFormat.QR_CODE, 200, 200)
-                    imgQrCode.setImageBitmap(bitmap)
-                    btnDescargarQr.isEnabled = true
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    imgQrCode.setImageResource(android.R.color.transparent)
-                    btnDescargarQr.isEnabled = false
-                }
+    fun mostrarQr(qrCode: String, habilitarDescarga: Boolean) {
+        if (qrCode.isNotEmpty() && habilitarDescarga) {
+            try {
+                val barcodeEncoder = BarcodeEncoder()
+                val bitmap = barcodeEncoder.encodeBitmap(qrCode, BarcodeFormat.QR_CODE, 200, 200)
+                imgQrCode.setImageBitmap(bitmap)
+                btnDescargarQr.isEnabled = true
+            } catch (e: Exception) {
+                e.printStackTrace()
+                imgQrCode.setImageResource(android.R.color.transparent)
+                btnDescargarQr.isEnabled = false
             }
         } else {
             imgQrCode.setImageResource(android.R.color.transparent)
@@ -226,28 +232,23 @@ class VClase(private val activity: Activity) {
         }
     }
     
-    private fun descargarQr() {
-        if (claseEditando?.idQrCode != null) {
-            val qr = qrController.obtenerQrPorId(claseEditando!!.idQrCode!!)
-            if (qr != null) {
-                try {
-                    val barcodeEncoder = BarcodeEncoder()
-                    val bitmap = barcodeEncoder.encodeBitmap(qr.qrCode, BarcodeFormat.QR_CODE, 400, 400)
-                    
-                    val fileName = "QR_Clase_${claseEditando!!.id}.png"
-                    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                    val file = File(downloadsDir, fileName)
-                    
-                    val outputStream = FileOutputStream(file)
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-                    outputStream.close()
-                    
-                    Toast.makeText(activity, "QR descargado en Descargas/$fileName", Toast.LENGTH_LONG).show()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    Toast.makeText(activity, "Error al descargar QR", Toast.LENGTH_SHORT).show()
-                }
-            }
+    fun descargarQrArchivo(qrCode: String, claseId: Int) {
+        try {
+            val barcodeEncoder = BarcodeEncoder()
+            val bitmap = barcodeEncoder.encodeBitmap(qrCode, BarcodeFormat.QR_CODE, 400, 400)
+            
+            val fileName = "QR_Clase_${claseId}.png"
+            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val file = File(downloadsDir, fileName)
+            
+            val outputStream = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+            outputStream.close()
+            
+            Toast.makeText(activity, "QR descargado en Descargas/$fileName", Toast.LENGTH_LONG).show()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(activity, "Error al descargar QR", Toast.LENGTH_SHORT).show()
         }
     }
 }

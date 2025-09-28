@@ -3,12 +3,10 @@ package com.example.controlasistencia.view
 import android.app.Activity
 import android.widget.*
 import com.example.controlasistencia.R
-import com.example.controlasistencia.controller.CMateriaController
 import com.example.controlasistencia.model.MMateria
 
 class VMateriaView(private val activity: Activity) {
     
-    private val controller = CMateriaController(activity, this)
     private val txtNombre: EditText = activity.findViewById(R.id.txtNombreMateria)
     private val btnGuardar: Button = activity.findViewById(R.id.btnGuardar)
     private val btnAgregar: Button = activity.findViewById(R.id.btnAgregar)
@@ -17,26 +15,47 @@ class VMateriaView(private val activity: Activity) {
     
     private var materiaEditando: MMateria? = null
     private var adapter: ArrayAdapter<String>? = null
+    private var materias: List<MMateria> = emptyList()
+    
+    // Callbacks
+    private var onGuardarClick: (() -> Unit)? = null
+    private var onAgregarClick: (() -> Unit)? = null
+    private var onEliminarClick: (() -> Unit)? = null
+    private var onMateriaSeleccionada: ((MMateria) -> Unit)? = null
     
     init {
-        controller.actualizarVista()
         setupListeners()
     }
     
     private fun setupListeners() {
-        btnGuardar.setOnClickListener { guardarMateria() }
-        btnAgregar.setOnClickListener { controller.mostrarCrear() }
-        btnEliminar.setOnClickListener { eliminarMateria() }
+        btnGuardar.setOnClickListener { onGuardarClick?.invoke() }
+        btnAgregar.setOnClickListener { onAgregarClick?.invoke() }
+        btnEliminar.setOnClickListener { onEliminarClick?.invoke() }
         
         lvMaterias.setOnItemClickListener { _, _, position, _ ->
             val materiaTexto = adapter?.getItem(position) ?: ""
             val id = materiaTexto.split(" - ")[0].toInt()
-            val materia = controller.obtenerMateria( id)
-            materia?.let { controller.mostrarEditar(it) }
+            val materia = obtenerMateriaPorId(id)
+            materia?.let { onMateriaSeleccionada?.invoke(it) }
         }
     }
     
+    // Métodos para configurar callbacks
+    fun setOnGuardarClick(callback: () -> Unit) { onGuardarClick = callback }
+    fun setOnAgregarClick(callback: () -> Unit) { onAgregarClick = callback }
+    fun setOnEliminarClick(callback: () -> Unit) { onEliminarClick = callback }
+    fun setOnMateriaSeleccionada(callback: (MMateria) -> Unit) { onMateriaSeleccionada = callback }
+    
+    // Métodos para obtener datos del formulario
+    fun getNombre(): String = txtNombre.text.toString()
+    fun getMateriaEditando(): MMateria? = materiaEditando
+    
+    private fun obtenerMateriaPorId(id: Int): MMateria? {
+        return materias.find { it.id == id }
+    }
+    
     fun mostrarMaterias(materias: List<MMateria>) {
+        this.materias = materias
         val items = materias.map { "${it.id} - ${it.nombre}" }
         adapter = ArrayAdapter(activity, android.R.layout.simple_list_item_1, items)
         lvMaterias.adapter = adapter
@@ -54,24 +73,7 @@ class VMateriaView(private val activity: Activity) {
         btnEliminar.isEnabled = true
     }
     
-    private fun guardarMateria() {
-        val nombre = txtNombre.text.toString()
-        if (materiaEditando != null) {
-            controller.actualizarMateria(materiaEditando!!, nombre)
-        } else {
-            controller.crearMateria(nombre)
-        }
-        limpiarFormulario()
-    }
-    
-    private fun eliminarMateria() {
-        materiaEditando?.let {
-            controller.eliminarMateria(it)
-            limpiarFormulario()
-        }
-    }
-    
-    private fun limpiarFormulario() {
+    fun limpiarFormulario() {
         txtNombre.setText("")
         materiaEditando = null
         btnEliminar.isEnabled = false

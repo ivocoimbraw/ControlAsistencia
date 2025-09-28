@@ -9,6 +9,14 @@ class CMateriaController(
     private val view: VMateriaView
 ) {
     
+    fun inicializar() {
+        view.setOnGuardarClick { guardarMateria() }
+        view.setOnAgregarClick { mostrarCrear() }
+        view.setOnEliminarClick { eliminarMateria() }
+        view.setOnMateriaSeleccionada { materia -> mostrarEditar(materia) }
+        actualizarVista()
+    }
+    
     fun cargarMaterias() {
         val materias = MMateria.listar(context)
         view.mostrarMaterias(materias)
@@ -45,5 +53,33 @@ class CMateriaController(
     
     fun actualizarVista() {
         cargarMaterias()
+    }
+    
+    // Métodos para instanciar modelos
+    fun crearInstanciaMateria(nombre: String = ""): MMateria {
+        return MMateria(nombre = nombre)
+    }
+    
+    fun crearInstanciaMateriaVacia(): MMateria {
+        return MMateria()
+    }
+    
+    private fun guardarMateria() {
+        val nombre = view.getNombre()
+        val materiaEditando = view.getMateriaEditando()
+        
+        if (materiaEditando != null) {
+            actualizarMateria(materiaEditando, nombre)
+        } else {
+            crearMateria(nombre)
+        }
+        view.limpiarFormulario()
+    }
+    
+    private fun eliminarMateria() {
+        view.getMateriaEditando()?.let {
+            eliminarMateria(it)
+            view.limpiarFormulario()
+        }
     }
 }

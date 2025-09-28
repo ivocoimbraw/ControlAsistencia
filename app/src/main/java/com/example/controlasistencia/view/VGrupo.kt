@@ -3,13 +3,11 @@ package com.example.controlasistencia.view
 import android.app.Activity
 import android.widget.*
 import com.example.controlasistencia.R
-import com.example.controlasistencia.controller.CGrupo
 import com.example.controlasistencia.model.MGrupo
 import com.example.controlasistencia.model.MMateria
 
 class VGrupo(private val activity: Activity) {
 
-    private val controller = CGrupo(activity, this)
     private val txtNombre: EditText = activity.findViewById(R.id.txtNombreGrupo)
     private val slcMateria: Spinner = activity.findViewById(R.id.slcMateria)
     private val btnGuardar: Button = activity.findViewById(R.id.btnGuardar)
@@ -21,26 +19,56 @@ class VGrupo(private val activity: Activity) {
     private var adapter: ArrayAdapter<String>? = null
     private var materias: List<MMateria> = emptyList()
     
+    // Callbacks
+    private var onGuardarClick: (() -> Unit)? = null
+    private var onAgregarClick: (() -> Unit)? = null
+    private var onEliminarClick: (() -> Unit)? = null
+    private var onGrupoSeleccionado: ((MGrupo) -> Unit)? = null
+    private var obtenerMateria: ((Int) -> String)? = null
+    
     init {
-        controller.actualizarVista()
         setupListeners()
     }
     
     private fun setupListeners() {
-        btnGuardar.setOnClickListener { guardarGrupo() }
-        btnAgregar.setOnClickListener { controller.mostrarCrear() }
-        btnEliminar.setOnClickListener { eliminarGrupo() }
+        btnGuardar.setOnClickListener { onGuardarClick?.invoke() }
+        btnAgregar.setOnClickListener { onAgregarClick?.invoke() }
+        btnEliminar.setOnClickListener { onEliminarClick?.invoke() }
         
         lvGrupos.setOnItemClickListener { _, _, position, _ ->
             val grupoTexto = adapter?.getItem(position) ?: ""
             val id = grupoTexto.split(" - ")[0].toInt()
-            val grupo = controller.obtenerGrupo( id)
-            grupo?.let { controller.mostrarEditar(it) }
+            // Necesitamos obtener el grupo de alguna manera
+            val grupo = obtenerGrupoPorId(id)
+            grupo?.let { onGrupoSeleccionado?.invoke(it) }
         }
     }
     
+    // Métodos para configurar callbacks
+    fun setOnGuardarClick(callback: () -> Unit) { onGuardarClick = callback }
+    fun setOnAgregarClick(callback: () -> Unit) { onAgregarClick = callback }
+    fun setOnEliminarClick(callback: () -> Unit) { onEliminarClick = callback }
+    fun setOnGrupoSeleccionado(callback: (MGrupo) -> Unit) { onGrupoSeleccionado = callback }
+    fun setObtenerMateria(callback: (Int) -> String) { obtenerMateria = callback }
+    
+    // Métodos para obtener datos del formulario
+    fun getNombre(): String = txtNombre.text.toString()
+    fun getMateriaSeleccionada(): MMateria = materias[slcMateria.selectedItemPosition]
+    fun getGrupoEditando(): MGrupo? = grupoEditando
+    
+    // Lista para almacenar los grupos y poder obtenerlos por ID
+    private var grupos: List<MGrupo> = emptyList()
+    
+    private fun obtenerGrupoPorId(id: Int): MGrupo? {
+        return grupos.find { it.id == id }
+    }
+    
     fun mostrarGrupos(grupos: List<MGrupo>) {
-        val items = grupos.map { "${it.id} - ${it.nombre} (${controller.obtenerMateria(it.id_materia)})" }
+        this.grupos = grupos
+        val items = grupos.map { 
+            val materia = obtenerMateria?.invoke(it.id_materia) ?: ""
+            "${it.id} - ${it.nombre} ($materia)" 
+        }
         adapter = ArrayAdapter(activity, android.R.layout.simple_list_item_1, items)
         lvGrupos.adapter = adapter
     }
@@ -68,26 +96,7 @@ class VGrupo(private val activity: Activity) {
         btnEliminar.isEnabled = true
     }
     
-    private fun guardarGrupo() {
-        val nombre = txtNombre.text.toString()
-        val materiaSeleccionada = materias[slcMateria.selectedItemPosition]
-        
-        if (grupoEditando != null) {
-            controller.actualizarGrupo(grupoEditando!!, nombre, materiaSeleccionada.id)
-        } else {
-            controller.crearGrupo(nombre, materiaSeleccionada.id)
-        }
-        limpiarFormulario()
-    }
-    
-    private fun eliminarGrupo() {
-        grupoEditando?.let {
-            controller.eliminarGrupo(it)
-            limpiarFormulario()
-        }
-    }
-    
-    private fun limpiarFormulario() {
+    fun limpiarFormulario() {
         txtNombre.setText("")
         slcMateria.setSelection(0)
         grupoEditando = null
