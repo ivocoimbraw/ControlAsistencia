@@ -3,6 +3,7 @@ package com.example.controlasistencia.controller
 import android.content.Context
 import com.example.controlasistencia.model.MClase
 import com.example.controlasistencia.model.MGrupo
+import com.example.controlasistencia.model.MMateria
 import com.example.controlasistencia.model.MQrCode
 import com.example.controlasistencia.view.VClase
 
@@ -18,7 +19,8 @@ class CClase(
 
     fun cargarGrupos() {
         val grupos = MGrupo.listar(context)
-        view.mostrarGrupos(grupos)
+        val materias = MMateria.listar(context)
+        view.mostrarGrupos(grupos, materias)
     }
 
     fun mostrarCrear() {
@@ -74,7 +76,8 @@ class CClase(
     }
 
     fun obtenerMateria(idMateria: Int): String {
-        return MGrupo.obtenerMateria(context, idMateria)
+        val materia = MMateria.obtener(context, idMateria)
+        return materia?.nombre ?: "Materia no encontrada"
     }
 
     fun obtenerQrCode(idQrCode: Int): MQrCode? {
@@ -82,8 +85,8 @@ class CClase(
     }
 
     fun actualizarVista() {
-        cargarClases()
         cargarGrupos()
+        cargarClases()
     }
     
     // Métodos para instanciar modelos

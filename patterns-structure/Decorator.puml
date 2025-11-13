@@ -1,0 +1,43 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class Client
+
+interface DataSource {
+  + writeData(data)
+  + readData()
+}
+
+class FileDataSource {
+  - filename
+  + FileDataSource(filename)
+  + writeData(data)
+  + readData()
+}
+
+class DataSourceDecorator {
+  - wrappee: DataSource
+  + DataSourceDecorator(s: DataSource)
+  + writeData(data)
+  + readData()
+}
+
+class EncryptionDecorator
+class CompressionDecorator
+
+DataSource <|.. FileDataSource
+DataSource <|.. DataSourceDecorator
+DataSourceDecorator <|-- EncryptionDecorator
+DataSourceDecorator <|-- CompressionDecorator
+
+Client --> DataSource
+DataSourceDecorator o-- DataSource : wrappee
+
+note bottom of Client
+  source = new FileDataSource(filename)
+  source = new EncryptionDecorator(source)
+  source = new CompressionDecorator(source)
+  source.writeData(data)
+end note
+
+@enduml

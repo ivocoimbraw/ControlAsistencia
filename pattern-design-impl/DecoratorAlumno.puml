@@ -1,0 +1,76 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class Client
+
+interface AlumnoDataSource {
+  + listar(): List<MAlumno>
+  + obtener(registro: String): MAlumno?
+  + insertar(alumno: MAlumno): Boolean
+  + actualizar(alumno: MAlumno): Boolean
+  + eliminar(alumno: MAlumno): Boolean
+}
+
+class AlumnoSqliteDataSource {
+  - context
+  + AlumnoSqliteDataSource(context)
+  + listar(): List<MAlumno>
+  + obtener(registro: String): MAlumno?
+  + insertar(alumno: MAlumno): Boolean
+  + actualizar(alumno: MAlumno): Boolean
+  + eliminar(alumno: MAlumno): Boolean
+}
+
+class AlumnoDataSourceDecorator {
+  - wrappee: AlumnoDataSource
+  + AlumnoDataSourceDecorator(s: AlumnoDataSource)
+  + listar(): List<MAlumno>
+  + obtener(registro: String): MAlumno?
+  + insertar(alumno: MAlumno): Boolean
+  + actualizar(alumno: MAlumno): Boolean
+  + eliminar(alumno: MAlumno): Boolean
+}
+
+class LoggingAlumnoDataSource {
+  + listar(): List<MAlumno>
+  + obtener(registro: String): MAlumno?
+  + insertar(alumno: MAlumno): Boolean
+  + actualizar(alumno: MAlumno): Boolean
+  + eliminar(alumno: MAlumno): Boolean
+}
+
+class CachingAlumnoDataSource {
+  + listar(): List<MAlumno>
+  + obtener(registro: String): MAlumno?
+  + insertar(alumno: MAlumno): Boolean
+  + actualizar(alumno: MAlumno): Boolean
+  + eliminar(alumno: MAlumno): Boolean
+}
+
+AlumnoDataSource <|.. AlumnoSqliteDataSource
+AlumnoDataSource <|.. AlumnoDataSourceDecorator
+AlumnoDataSourceDecorator <|-- LoggingAlumnoDataSource
+AlumnoDataSourceDecorator <|-- CachingAlumnoDataSource
+
+Client --> AlumnoDataSource
+AlumnoDataSourceDecorator o-- AlumnoDataSource : wrappee
+
+note right of LoggingAlumnoDataSource
+  // before: log entrada (método, args)
+  // super::metodo(args)
+  // after: log salida (resultado/duración)
+end note
+
+note right of CachingAlumnoDataSource
+  // listar/obtener: hit -> return; miss -> super::metodo(args) y cachear
+  // insertar/actualizar/eliminar: super::metodo(args) y actualizar/invalidar caché
+end note
+
+note bottom of Client
+  ds = new AlumnoSqliteDataSource(context)
+  ds = new CachingAlumnoDataSource(ds)
+  ds = new LoggingAlumnoDataSource(ds)
+  ds.listar()
+end note
+
+@enduml

@@ -73,6 +73,13 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Grupo:"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp" />
+
     <Spinner
         android:id="@+id/slcGrupo"
         android:layout_width="match_parent"

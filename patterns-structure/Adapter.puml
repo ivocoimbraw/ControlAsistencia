@@ -1,0 +1,25 @@
+ @startuml
+ skinparam classAttributeIconSize 0
+ 
+ class Client
+ interface "Client Interface" as ClientInterface {
+   + method(data)
+ }
+ class Service {
+   + serviceMethod(specialData)
+ }
+ class Adapter {
+   - adaptee: Service
+   + method(data)
+ }
+ 
+ Client --> ClientInterface
+ ClientInterface <|.. Adapter
+ Adapter --> Service : adaptee
+ 
+ note bottom of Adapter
+   specialData = convertToServiceFormat(data)
+   return adaptee.serviceMethod(specialData)
+ end note
+ 
+ @enduml

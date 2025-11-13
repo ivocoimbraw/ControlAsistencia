@@ -1,12 +1,14 @@
 package com.example.controlasistencia.controller
 
 import android.content.Context
+import com.example.controlasistencia.data.alumno.AlumnoDataSource
 import com.example.controlasistencia.model.MAlumno
 import com.example.controlasistencia.view.VAlumno
 
 class CAlumno(
     private val context: Context,
-    private val view: VAlumno
+    private val view: VAlumno,
+    private val dataSource: AlumnoDataSource
 ) {
 
     fun inicializar() {
@@ -18,7 +20,7 @@ class CAlumno(
     }
 
     fun cargarAlumnos() {
-        val alumnos = MAlumno.listar(context)
+        val alumnos = dataSource.listar()
         view.mostrarAlumnos(alumnos)
     }
 
@@ -32,7 +34,7 @@ class CAlumno(
 
     fun crearAlumno(registro: String, apellidop: String, apellidom: String, nombre: String) {
         val alumno = MAlumno(registro, apellidop, apellidom, nombre)
-        alumno.insertar(context)
+        dataSource.insertar(alumno)
         actualizarVista()
     }
 
@@ -41,17 +43,17 @@ class CAlumno(
         alumno.apellidop = apellidop
         alumno.apellidom = apellidom
         alumno.nombre = nombre
-        alumno.actualizar(context)
+        dataSource.actualizar(alumno)
         actualizarVista()
     }
 
     fun eliminarAlumno(alumno: MAlumno) {
-        alumno.eliminar(context)
+        dataSource.eliminar(alumno)
         actualizarVista()
     }
 
     fun obtenerAlumno(registro: String): MAlumno? {
-        return MAlumno.obtener(context, registro)
+        return dataSource.obtener(registro)
     }
 
     fun actualizarVista() {

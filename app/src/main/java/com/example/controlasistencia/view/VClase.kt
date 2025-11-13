@@ -7,6 +7,7 @@ import android.widget.*
 import com.example.controlasistencia.R
 import com.example.controlasistencia.model.MClase
 import com.example.controlasistencia.model.MGrupo
+import com.example.controlasistencia.model.MMateria
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.google.zxing.BarcodeFormat
 import java.io.File
@@ -30,6 +31,7 @@ class VClase(private val activity: Activity) {
     private var claseEditando: MClase? = null
     private var adapter: ArrayAdapter<String>? = null
     private var grupos: List<MGrupo> = emptyList()
+    private var materias: List<MMateria> = emptyList()
     private val estadosClase = arrayOf("PROGRAMADA", "CANCELADA")
     
     // Callbacks para el controlador
@@ -87,16 +89,29 @@ class VClase(private val activity: Activity) {
         val gruposParaBuscar = if (gruposDisponibles.isNotEmpty()) gruposDisponibles else grupos
         val items = clases.map { 
             val grupo = gruposParaBuscar.find { grupo -> grupo.id == it.idGrupo }
-            val materiaGrupo = grupo?.let { "${it.id_materia} - ${it.nombre}" } ?: "Grupo ${it.idGrupo}"
+            val materia = grupo?.let { materias.find { materia -> materia.id == it.id_materia } }
+            val materiaGrupo = if (grupo != null && materia != null) {
+                "${grupo.nombre}-(${materia.nombre})"
+            } else {
+                "Grupo ${it.idGrupo}"
+            }
             "${it.id} - ${it.fecha} ${it.horaInicio}-${it.horaFin} (${materiaGrupo}) [${it.estado}]"
         }
         adapter = ArrayAdapter(activity, android.R.layout.simple_list_item_1, items)
         lvClases.adapter = adapter
     }
 
-    fun mostrarGrupos(grupos: List<MGrupo>) {
+    fun mostrarGrupos(grupos: List<MGrupo>, materias: List<MMateria>) {
         this.grupos = grupos
-        val items = grupos.map { "${it.id_materia} - ${it.nombre}" }
+        this.materias = materias
+        val items = grupos.map { grupo ->
+            val materia = materias.find { it.id == grupo.id_materia }
+            if (materia != null) {
+                "${grupo.nombre}-(${materia.nombre})"
+            } else {
+                "${grupo.nombre}-(Materia no encontrada)"
+            }
+        }
         val spinnerAdapter = ArrayAdapter(activity, android.R.layout.simple_spinner_item, items)
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         slcGrupo.adapter = spinnerAdapter

@@ -1,0 +1,38 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+interface Strategy {
+  + execute(data)
+}
+
+class ConcreteStrategyA
+class ConcreteStrategyB
+
+Strategy <|.. ConcreteStrategyA
+Strategy <|.. ConcreteStrategyB
+
+class Client
+class Context {
+  - strategy: Strategy
+  + setStrategy(s: Strategy)
+  + doSomething()
+}
+
+Context o-- Strategy : strategy
+Client ..> Context : uses
+
+note left of Context
+  strategy.execute()
+end note
+
+note bottom of Client
+  str = new SomeStrategy()
+  context.setStrategy(str)
+  context.doSomething()
+  // ...
+  other = new OtherStrategy()
+  context.setStrategy(other)
+  context.doSomething()
+end note
+
+@enduml
