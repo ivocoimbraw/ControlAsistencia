@@ -1,6 +1,7 @@
 package com.example.controlasistencia.controller
 
 import android.content.Context
+import com.example.controlasistencia.data.MateriaDAO
 import com.example.controlasistencia.model.MMateria
 import com.example.controlasistencia.view.VMateriaView
 
@@ -8,6 +9,7 @@ class CMateriaController(
     private val context: Context,
     private val view: VMateriaView
 ) {
+    private val dao by lazy { MateriaDAO(context) }
     
     fun inicializar() {
         view.setOnGuardarClick { guardarMateria() }
@@ -18,7 +20,7 @@ class CMateriaController(
     }
     
     fun cargarMaterias() {
-        val materias = MMateria.listar(context)
+        val materias = dao.listar()
         view.mostrarMaterias(materias)
     }
     
@@ -32,23 +34,23 @@ class CMateriaController(
     
     fun crearMateria(nombre: String) {
         val materia = MMateria(nombre = nombre)
-        materia.insertar(context)
+        dao.insertar(materia)
         actualizarVista()
     }
     
     fun actualizarMateria(materia: MMateria, nuevoNombre: String) {
-        materia.nombre = nuevoNombre
-        materia.actualizar(context)
+        val actualizado = materia.copy(nombre = nuevoNombre)
+        dao.actualizar(actualizado.id, actualizado)
         actualizarVista()
     }
     
     fun eliminarMateria(materia: MMateria) {
-        materia.eliminar(context)
+        dao.eliminar(materia.id)
         actualizarVista()
     }
 
     fun obtenerMateria(idMateria: Int): MMateria? {
-        return MMateria.obtener(context, idMateria)
+        return dao.obtener(idMateria)
     }
     
     fun actualizarVista() {

@@ -1,6 +1,8 @@
 package com.example.controlasistencia.controller
 
 import android.content.Context
+import com.example.controlasistencia.data.GrupoDAO
+import com.example.controlasistencia.data.MateriaDAO
 import com.example.controlasistencia.model.MGrupo
 import com.example.controlasistencia.model.MMateria
 import com.example.controlasistencia.view.VGrupo
@@ -9,6 +11,8 @@ class CGrupo(
     private val context: Context,
     private val view: VGrupo
 ) {
+    private val grupoDAO by lazy { GrupoDAO(context) }
+    private val materiaDAO by lazy { MateriaDAO(context) }
     
     fun inicializar() {
         view.setOnGuardarClick { guardarGrupo() }
@@ -20,12 +24,12 @@ class CGrupo(
     }
     
     fun cargarGrupos() {
-        val grupos = MGrupo.listar(context)
+        val grupos = grupoDAO.listar()
         view.mostrarGrupos(grupos)
     }
     
     fun cargarMaterias() {
-        val materias = MMateria.listar(context)
+        val materias = materiaDAO.listar()
         view.mostrarMaterias(materias)
     }
     
@@ -41,28 +45,27 @@ class CGrupo(
     
     fun crearGrupo(nombre: String, idMateria: Int) {
         val grupo = MGrupo(nombre = nombre, id_materia = idMateria)
-        grupo.insertar(context)
+        grupoDAO.insertar(grupo)
         actualizarVista()
     }
     
     fun actualizarGrupo(grupo: MGrupo, nuevoNombre: String, nuevoIdMateria: Int) {
-        grupo.nombre = nuevoNombre
-        grupo.id_materia = nuevoIdMateria
-        grupo.actualizar(context)
+        val actualizado = grupo.copy(nombre = nuevoNombre, id_materia = nuevoIdMateria)
+        grupoDAO.actualizar(actualizado.id, actualizado)
         actualizarVista()
     }
     
     fun eliminarGrupo(grupo: MGrupo) {
-        grupo.eliminar(context)
+        grupoDAO.eliminar(grupo.id)
         actualizarVista()
     }
     
     fun obtenerMateria(idMateria: Int): String {
-        return MGrupo.obtenerMateria(context, idMateria)
+        return materiaDAO.obtener(idMateria)?.nombre ?: "Materia no encontrada"
     }
 
     fun obtenerGrupo(idGrupo: Int): MGrupo? {
-        return MGrupo.obtener(context, idGrupo)
+        return grupoDAO.obtener(idGrupo)
     }
     
     fun actualizarVista() {

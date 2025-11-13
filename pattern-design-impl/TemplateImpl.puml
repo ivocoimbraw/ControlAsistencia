@@ -1,0 +1,124 @@
+@startuml
+skinparam classAttributeIconSize 0
+title ControlAsistencia — Diagrama (DAO = Plantilla en español)
+
+package Vista {
+  class VMateria {
+    + txtNombre: EditText
+    + btnAgregar: Button
+    + btnGuardar: Button
+    + btnEliminar: Button
+    + lvMaterias: ListView
+    + mostrarMaterias(): void
+    + mostrarFormularioCrear(): void
+    + mostrarFormularioEditar(materia: MMateria): void
+    + limpiarFormulario(): void
+    + getMateriaEditando(): MMateria?
+    + getNombre(): String
+  }
+
+  class VGrupo {
+    + txtNombre: EditText
+    + slcMateria: Select
+    + btnGuardar: Button
+    + btnAgregar: Button
+    + btnEliminar: Button
+    + lvGrupo: ListView
+    + obtenerGrupoPorId(): void
+    + mostrarGrupos(): void
+    + mostrarMaterias(): void
+    + mostrarFormularioCrear(): void
+    + mostrarFormularioEditar(): void
+    + limpiarFormulario(): void
+  }
+}
+
+package Persistencia {
+  class DBHelper {
+    + DATABASE_NAME: String
+    + DATABASE_VERSION: Int
+    + TABLE_MATERIA: String
+    + TABLE_GRUPO: String
+    + onCreate(db): void
+    + onUpgrade(db, oldV, newV): void
+  }
+
+  abstract class BasePlantillaDAO<T> {
+    # nombreTabla(): String
+    # columnaId(): String
+    # mapearCursor(c: Cursor): T
+    # contentValues(e: T, isUpdate: Boolean): ContentValues
+    # validarParaInsert(e: T)
+    # validarParaUpdate(e: T)
+    --
+    + insertar(e: T): Boolean
+    + obtener(id: Int): T?
+    + listar(): List<T>
+    + eliminar(id: Int): Boolean
+    + actualizar(id: Int, e: T): Boolean
+  }
+
+  class MateriaDAO {
+    + nombreTabla(): String
+    + columnaId(): String
+    + mapearCursor(c: Cursor): MMateria
+    + contentValues(e: MMateria, isUpdate: Boolean): ContentValues
+    + validarParaInsert(e: MMateria)
+    + validarParaUpdate(e: MMateria)
+    + insertar(e: MMateria): Boolean
+    + obtener(id: Int): MMateria?
+    + listar(): List<MMateria>
+    + eliminar(id: Int): Boolean
+    + actualizar(id: Int, e: MMateria): Boolean
+  }
+
+  class GrupoDAO {
+    + nombreTabla(): String
+    + columnaId(): String
+    + mapearCursor(c: Cursor): MGrupo
+    + contentValues(e: MGrupo, isUpdate: Boolean): ContentValues
+    + validarParaInsert(e: MGrupo)
+    + validarParaUpdate(e: MGrupo)
+    + insertar(e: MGrupo): Boolean
+    + obtener(id: Int): MGrupo?
+    + listar(): List<MGrupo>
+    + eliminar(id: Int): Boolean
+    + actualizar(id: Int, e: MGrupo): Boolean
+  }
+
+  BasePlantillaDAO <|-- MateriaDAO
+  BasePlantillaDAO <|-- GrupoDAO
+  DBHelper --> BasePlantillaDAO
+}
+
+package Controlador {
+  class CMateriaController {
+    - dao: MateriaDAO
+    + inicializar(): void
+    + crearMateria(nombre: String): void
+    + actualizarMateria(m: MMateria, nuevoNombre: String): void
+    + eliminarMateria(m: MMateria): void
+    + cargarMaterias(): void
+    + obtenerMateria(id: Int): MMateria?
+  }
+
+  class CGrupo {
+    - grupoDAO: GrupoDAO
+    - materiaDAO: MateriaDAO
+    + inicializar(): void
+    + crearGrupo(nombre: String, idMateria: Int): void
+    + actualizarGrupo(g: MGrupo, nuevoNombre: String, nuevoIdMat: Int): void
+    + eliminarGrupo(g: MGrupo): void
+    + cargarGrupos(): void
+    + cargarMaterias(): void
+    + obtenerMateria(idMateria: Int): String
+  }
+
+  CMateriaController --> MateriaDAO
+  CGrupo --> GrupoDAO
+  CGrupo --> MateriaDAO
+  VMateria ..> CMateriaController
+  VGrupo ..> CGrupo
+}
+
+@enduml
