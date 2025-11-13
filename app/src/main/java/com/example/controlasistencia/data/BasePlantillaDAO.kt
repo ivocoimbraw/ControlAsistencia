@@ -5,20 +5,14 @@ import android.content.Context
 import android.database.Cursor
 import com.example.controlasistencia.DBHelper
 
-/**
- * Plantilla (Template Method) base para CRUD simple sobre una tabla usando SQLiteOpenHelper.
- * Las subclases implementan los "hooks" para mapear entre Cursor <-> Entidad y nombres de tabla/columnas.
- */
 abstract class BasePlantillaDAO<T : Any>(
     private val context: Context
 ) {
-    // Hooks que las DAOs concretas deben implementar
     protected abstract fun nombreTabla(): String
     protected abstract fun columnaId(): String
     protected abstract fun mapearCursor(cursor: Cursor): T
     protected abstract fun contentValues(entity: T, isUpdate: Boolean = false): ContentValues
 
-    // Validaciones opcionales
     protected open fun validarParaInsert(entity: T) {}
     protected open fun validarParaUpdate(entity: T) {}
 
