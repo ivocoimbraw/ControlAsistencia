@@ -1,76 +1,156 @@
-@startuml
+@startuml Decorator Pattern - MVC Architecture
 skinparam classAttributeIconSize 0
+skinparam backgroundColor #FFFFFF
+skinparam packageStyle rectangle
 
-class Client
+title Patrón Decorator Aplicado a Arquitectura MVC - Sistema de Control de Asistencia
 
-interface AlumnoDataSource {
-  + listar(): List<MAlumno>
-  + obtener(registro: String): MAlumno?
-  + insertar(alumno: MAlumno): Boolean
-  + actualizar(alumno: MAlumno): Boolean
-  + eliminar(alumno: MAlumno): Boolean
+  class VAlumno {
+    + txtRegistro: EditText
+    + txtApellidoP: EditText
+    + txtNombre: EditText
+    + txtApellidoM: EditText
+    + btnGuardar: Button
+    + btnAgregar: Button
+    + lvAlumno: ListView
+    + btnEliminar: Button
+    --
+    + mostrarAlumnos(): void
+    + mostrarFormularioCrear(): void
+    + limpiarFormulario(): void
+    + mostrarFormularioEditar(): void
+  }
+
+  class CAlumno {
+    - view: VAlumno
+    - dataSource: AlumnoDataSource
+    --
+    + guardarAlumno(): void
+    + obtenerAlumno(): void
+    + actualizarAlumno(): void
+    + eliminarAlumno(): void
+    + cargarAlumno(): void
+    + inicializar(): void
+  }
+
+  class MAlumno {
+    + id: int
+    + nombre: String
+    + registro: String
+    + apellidop: String
+    + apellidom: String
+    --
+    + insertar(): boolean
+    + {static} obtener(id: int): MAlumno
+    + {static} listar(): List
+    + actualizar(): boolean
+    + eliminar(): boolean
+  }
+  
+  class DBHelper {
+    + DATABASE_NAME: String
+    + DATABASE_VERSION: Int
+    + TABLE_MATERIA: String
+    + TABLE_GRUPO: String
+    + TABLE_ESTUDIANTE: String
+    + TABLE_CLASE: String
+    + TABLE_QR_CODE: String
+    + TABLE_ASISTENCIA: String
+    --
+    + onCreate(): void
+    + onUpgrade(): void
+    + close(): void
+    + onOpen(): void
+  }
+
+package "Decorator Pattern" #FFE6E6 {
+  
+  ' ========== COMPONENTE (Interface) ==========
+  interface AlumnoDataSource <<interface>> {
+    + listar(): List<MAlumno>
+    + obtener(registro: String): MAlumno?
+    + insertar(alumno: MAlumno): Boolean
+    + actualizar(alumno: MAlumno): Boolean
+    + eliminar(alumno: MAlumno): Boolean
+  }
+  
+  
+  ' ========== COMPONENTE CONCRETO ==========
+  class AlumnoSqliteDataSource {
+    - context: Context
+    --
+    + AlumnoSqliteDataSource(context)
+    + listar(): List<MAlumno>
+    + obtener(registro: String): MAlumno?
+    + insertar(alumno: MAlumno): Boolean
+    + actualizar(alumno: MAlumno): Boolean
+    + eliminar(alumno: MAlumno): Boolean
+  }
+  
+  ' ========== DECORADOR BASE ==========
+  abstract class AlumnoDataSourceDecorator {
+    # wrappee: AlumnoDataSource
+    --
+    + AlumnoDataSourceDecorator(source: AlumnoDataSource)
+    + listar(): List<MAlumno>
+    + obtener(registro: String): MAlumno?
+    + insertar(alumno: MAlumno): Boolean
+    + actualizar(alumno: MAlumno): Boolean
+    + eliminar(alumno: MAlumno): Boolean
+  }
+  
+  ' ========== DECORADORES CONCRETOS ==========
+  class EncryptionDecorator {
+    + listar(): List<MAlumno>
+    + obtener(registro: String): MAlumno?
+    + insertar(alumno: MAlumno): Boolean
+    + actualizar(alumno: MAlumno): Boolean
+    + eliminar(alumno: MAlumno): Boolean
+    --
+    - encrypt(alumno: MAlumno): MAlumno
+    - decrypt(alumno: MAlumno): MAlumno
+    - encryptString(value: String): String
+    - decryptString(value: String): String
+  }
+  
+  class CompressionDecorator {
+    + listar(): List<MAlumno>
+    + obtener(registro: String): MAlumno?
+    + insertar(alumno: MAlumno): Boolean
+    + actualizar(alumno: MAlumno): Boolean
+    + eliminar(alumno: MAlumno): Boolean
+    --
+    - compress(alumno: MAlumno): MAlumno
+    - decompress(alumno: MAlumno): MAlumno
+    - compressString(value: String): String
+    - decompressString(value: String): String
+  }
+  
+  
+  ' Relaciones del Patrón Decorator
+  AlumnoDataSource <|.. AlumnoSqliteDataSource
+  AlumnoDataSource <|.. AlumnoDataSourceDecorator
+  AlumnoDataSourceDecorator <|-- EncryptionDecorator
+  AlumnoDataSourceDecorator <|-- CompressionDecorator
+  AlumnoDataSourceDecorator o-right-> AlumnoDataSource
 }
 
-class AlumnoSqliteDataSource {
-  - context
-  + AlumnoSqliteDataSource(context)
-  + listar(): List<MAlumno>
-  + obtener(registro: String): MAlumno?
-  + insertar(alumno: MAlumno): Boolean
-  + actualizar(alumno: MAlumno): Boolean
-  + eliminar(alumno: MAlumno): Boolean
-}
+  class AlumnoActivity {
+    - view: VAlumno
+    - controller: CAlumno
+    --
+    + onCreate(savedInstanceState: Bundle): void
+  }
+  
 
-class AlumnoDataSourceDecorator {
-  - wrappee: AlumnoDataSource
-  + AlumnoDataSourceDecorator(s: AlumnoDataSource)
-  + listar(): List<MAlumno>
-  + obtener(registro: String): MAlumno?
-  + insertar(alumno: MAlumno): Boolean
-  + actualizar(alumno: MAlumno): Boolean
-  + eliminar(alumno: MAlumno): Boolean
-}
+' ========== RELACIONES MVC ==========
+AlumnoActivity --> VAlumno 
+AlumnoActivity --> CAlumno  
+AlumnoActivity ..> AlumnoDataSource 
 
-class LoggingAlumnoDataSource {
-  + listar(): List<MAlumno>
-  + obtener(registro: String): MAlumno?
-  + insertar(alumno: MAlumno): Boolean
-  + actualizar(alumno: MAlumno): Boolean
-  + eliminar(alumno: MAlumno): Boolean
-}
+CAlumno --> VAlumno 
+CAlumno --> AlumnoDataSource 
+CAlumno ..> MAlumno 
 
-class CachingAlumnoDataSource {
-  + listar(): List<MAlumno>
-  + obtener(registro: String): MAlumno?
-  + insertar(alumno: MAlumno): Boolean
-  + actualizar(alumno: MAlumno): Boolean
-  + eliminar(alumno: MAlumno): Boolean
-}
-
-AlumnoDataSource <|.. AlumnoSqliteDataSource
-AlumnoDataSource <|.. AlumnoDataSourceDecorator
-AlumnoDataSourceDecorator <|-- LoggingAlumnoDataSource
-AlumnoDataSourceDecorator <|-- CachingAlumnoDataSource
-
-Client --> AlumnoDataSource
-AlumnoDataSourceDecorator o-- AlumnoDataSource : wrappee
-
-note right of LoggingAlumnoDataSource
-  // before: log entrada (método, args)
-  // super::metodo(args)
-  // after: log salida (resultado/duración)
-end note
-
-note right of CachingAlumnoDataSource
-  // listar/obtener: hit -> return; miss -> super::metodo(args) y cachear
-  // insertar/actualizar/eliminar: super::metodo(args) y actualizar/invalidar caché
-end note
-
-note bottom of Client
-  ds = new AlumnoSqliteDataSource(context)
-  ds = new CachingAlumnoDataSource(ds)
-  ds = new LoggingAlumnoDataSource(ds)
-  ds.listar()
-end note
-
-@enduml
+AlumnoSqliteDataSource ..> MAlumno
+MAlumno ..> DBHelper
